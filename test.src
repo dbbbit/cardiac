@@ -1,0 +1,9 @@
+a       DATA    001
+b       DATA    002
+result  data    000
+
+        cla     a
+        add     b
+        sto     result
+        out     result
+        HRS     00
