@@ -18,3 +18,8 @@
 </pre>
 
     make run
+
+## Link
+
+[Offical manual(pdf)](http://kylem.net/hardware/cardiac/CARDIAC_manual.pdf)
+
