@@ -1,4 +1,5 @@
 import math
+import sys
 
 class Memory(object):
     """
@@ -31,7 +32,19 @@ class Memory(object):
             return '-'+data[-length:]
         return data[-length:]
 
-
+    def show_mem(self):
+        res = ""
+        for addr, value in enumerate(self.mem):
+            if addr % 10 == 0:
+                res = res + '\n'
+            if not value:
+                value = "---"
+            if self.pc - 1 == addr:
+                res = res + "%s >%s< " %(self.pad(addr,2), value)
+            else:
+                res = res + "%s [%s] " %(self.pad(addr,2), value)
+        print res
+    
 class IO(object):
     """
     This class controls the virtual I/O of the simulator.
@@ -84,6 +97,7 @@ class CPU(object):
     def __init__(self):
         self.init_cpu()
         self.reset()
+        self.step = False
         try:
             self.init_mem()
         except AttributeError:
@@ -144,6 +158,15 @@ class CPU(object):
         to control execution in another thread of operation.
         """
         self.fetch()
+
+        if self.step:
+            self.show_mem()
+            if len(self.reader):
+                print "top of Input: %s" % self.reader[-1]
+            print "IR: %s    PC: %s    Acc: %s\nOutput: %s\n" % (self.pad(self.ir), \
+                self.pad(self.pc), self.pad(self.acc), self.format_output())
+            raw_input("press enter to continue >>")
+
         opcode, data = int(math.floor(self.ir / 100)), self.ir % 100
         self.__opcodes[opcode](data)
 
@@ -186,6 +209,7 @@ class CPU(object):
 
     def opcode_8(self, data):
         """ Unconditional Jump operation """
+        self.mem[99] = '8' + self.pad(self.pc, 2)
         self.pc = data
 
     def opcode_9(self, data):
@@ -208,6 +232,8 @@ class Cardiac(CPU, Memory, IO):
 if __name__ == '__main__':
     c = Cardiac()
     c.read_deck('test')
+    if len(sys.argv) >= 2:
+        c.step = True
     try:
         c.run()
     except:
