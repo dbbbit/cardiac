@@ -1,6 +1,7 @@
 import math
 import sys
 
+
 class Memory(object):
     """
     This class controls the virtual memory space of the simulator.
@@ -9,8 +10,8 @@ class Memory(object):
         """
         This method resets the Cardiac's memory space to all blank strings, as per Cardiac specs.
         """
-        self.mem = ['' for i in range(0,100)]
-        self.mem[0] = '001' #: The Cardiac bootstrap operation.
+        self.mem = ['' for _ in range(0, 100)]
+        self.mem[0] = '001'  #: The Cardiac bootstrap operation.
 
     def get_memint(self, data):
         """
@@ -20,7 +21,8 @@ class Memory(object):
         """
         return int(self.mem[data])
 
-    def pad(self, data, length=3):
+    @staticmethod
+    def pad(data, length=3):
         """
         This function pads either an integer or a number in string format with
         zeros.  This is needed to replicate the exact behavior of the Cardiac.
@@ -36,15 +38,16 @@ class Memory(object):
         res = ""
         for addr, value in enumerate(self.mem):
             if addr % 10 == 0:
-                res = res + '\n'
+                res += '\n'
             if not value:
                 value = "---"
             if self.pc - 1 == addr:
-                res = res + "%s >%s< " %(self.pad(addr,2), value)
+                res += "%s >%s< " % (self.pad(addr, 2), value)
             else:
-                res = res + "%s [%s] " %(self.pad(addr,2), value)
+                res += "%s [%s] " % (self.pad(addr, 2), value)
         print res
-    
+
+
 class IO(object):
     """
     This class controls the virtual I/O of the simulator.
@@ -54,7 +57,7 @@ class IO(object):
         """
         This method initializes the input reader.
         """
-        self.reader = [] #: This variable can be accessed after initializing the class to provide input data.
+        self.reader = []  #: This variable can be accessed after initializing the class to provide input data.
 
     def init_output(self):
         """
@@ -225,6 +228,7 @@ class CPU(object):
             self.process()
         print "Output:\n%s" % self.format_output()
         self.init_output()
+
 
 class Cardiac(CPU, Memory, IO):
     pass
