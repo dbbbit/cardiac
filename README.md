@@ -38,5 +38,5 @@ Output: 003
 ```
 ## Link
 
-[Offical manual(pdf)](http://kylem.net/hardware/cardiac/CARDIAC_manual.pdf)
+[Offical manual](http://kylem.net/hardware/cardiac/CARDIAC_manual.pdf)
 
