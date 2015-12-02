@@ -2,20 +2,11 @@
 
 ![](https://www.cs.drexel.edu/~bls96/museum/cardbk.jpg)
 
-## Play!
-
-<pre>
-├── Makefile
-├── README
-├── a.py            #: the assember
-├── c.py            #: the cpu
-├── test            #: compiled code 
-└── test.src        #: source code
-</pre>
+## Run
 
     make run
 
-### Step
+### Debug
     make step
     
 ```python
