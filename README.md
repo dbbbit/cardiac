@@ -34,6 +34,6 @@ Output: 003
 ```
 ## Link
 
-[Cardiac Backgroud](https://www.cs.drexel.edu/~bls96/museum/cardiac.html)
+[Cardiac Backgroud](https://www.cs.drexel.edu/~bls96/museum/cardiac.html)   
 [Offical Manual](http://kylem.net/hardware/cardiac/CARDIAC_manual.pdf)
 
