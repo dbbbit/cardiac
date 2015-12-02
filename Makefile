@@ -1,10 +1,10 @@
 run:	compile
-	python c.py
+	python cardiac.py
 
 step:	compile
-	python c.py --step
+	python cardiac.py --step
 
 compile:
-	python a.py > test
+	python asm.py > test
 
 

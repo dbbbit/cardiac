@@ -1,10 +1,6 @@
 # The die-cute cpu on paper
 
-## [Cardiac](https://www.cs.drexel.edu/~bls96/museum/cardiac.html)
-
-</hr>
 ![](https://www.cs.drexel.edu/~bls96/museum/cardbk.jpg)
-
 
 ## Play!
 
@@ -38,5 +34,6 @@ Output: 003
 ```
 ## Link
 
-[Offical manual](http://kylem.net/hardware/cardiac/CARDIAC_manual.pdf)
+[Cardiac Backgroud](https://www.cs.drexel.edu/~bls96/museum/cardiac.html)
+[Offical Manual](http://kylem.net/hardware/cardiac/CARDIAC_manual.pdf)
 

@@ -13,13 +13,13 @@ class Memory(object):
         self.mem = ['' for _ in range(0, 100)]
         self.mem[0] = '001'  #: The Cardiac bootstrap operation.
 
-    def get_memint(self, data):
+    def read(self, cell):
         """
         Since our memory storage is *string* based, like the real Cardiac, we need
         a reusable function to grab a integer from memory.  This method could be
         overridden if say a new memory type was implemented, say an mmap one.
         """
-        return int(self.mem[data])
+        return int(self.mem[cell])
 
     @staticmethod
     def pad(data, length=3):
@@ -95,7 +95,7 @@ class IO(object):
 
 class CPU(object):
     """
-    This class is the cardiac "CPU".
+    This class is the cardiac `CPU`.
     """
     def __init__(self):
         self.init_cpu()
@@ -115,10 +115,10 @@ class CPU(object):
         """
         This method resets the CPU's registers to their defaults.
         """
-        self.pc = 0 #: Program Counter
-        self.ir = 0 #: Instruction Register
-        self.acc = 0 #: Accumulator
-        self.running = False #: Are we running?
+        self.pc = 0  #: Program Counter
+        self.ir = 0  #: Instruction Register
+        self.acc = 0  #: Accumulator
+        self.running = False  #: Are we running?
 
     def init_cpu(self):
         """
@@ -130,25 +130,20 @@ class CPU(object):
         call-map. 
         """
         self.__opcodes = {}
-        classes = [self.__class__] #: This holds all the classes and base classes.
-        while classes:
-            cls = classes.pop() # Pop the classes stack and being
-            if cls.__bases__: # Does this class have any base classes?
-                classes = classes + list(cls.__bases__)
-            for name in dir(cls): # Lets iterate through the names.
-                if name[:7] == 'opcode_': # We only want opcodes here.
-                    try:
-                        opcode = int(name[7:])
-                    except ValueError:
-                        raise NameError('Opcodes must be numeric, invalid opcode: %s' % name[7:])
-                    self.__opcodes.update({opcode: getattr(self, 'opcode_%s' % opcode)})
+        for name in dir(self.__class__):  #: Lets iterate through the names.
+            if name[:7] == 'opcode_':  #: We only want opcodes here.
+                try:
+                    opcode = int(name[7:])
+                except ValueError:
+                    raise NameError('Opcodes must be numeric, invalid opcode: %s' % name[7:])
+                self.__opcodes.update({opcode: getattr(self, 'opcode_%s' % opcode)})
 
-    def fetch(self):
+    def fetch_instruction(self):
         """
         This method retrieves an instruction from memory address pointed to by the program pointer.
         Then we increment the program pointer.
         """
-        self.ir = self.get_memint(self.pc)
+        self.ir = self.read(self.pc)
         self.pc += 1
 
     def process(self):
@@ -156,11 +151,9 @@ class CPU(object):
         Process a single opcode from the current program counter.  This is
         normally called from the running loop, but can also be called
         manually to provide a "step-by-step" debugging interface, or
-        to slow down execution using time.sleep().  This is the method
-        that will also need to used if you build a TK/GTK/Qt/curses frontend
-        to control execution in another thread of operation.
+        to slow down execution using time.sleep().
         """
-        self.fetch()
+        self.fetch_instruction()
 
         if self.step:
             self.show_mem()
@@ -170,68 +163,66 @@ class CPU(object):
                 self.pad(self.pc), self.pad(self.acc), self.format_output())
             raw_input("press enter to continue >>")
 
-        opcode, data = int(math.floor(self.ir / 100)), self.ir % 100
-        self.__opcodes[opcode](data)
+        opcode, cell = int(math.floor(self.ir / 100)), self.ir % 100
+        self.__opcodes[opcode](cell)
 
-    def opcode_0(self, data):
+    def opcode_0(self, cell):
         """ INPUT Operation """
-        self.mem[data] = self.get_input()
+        self.mem[cell] = self.get_input()
 
-    def opcode_1(self, data):
+    def opcode_1(self, cell):
         """ Clear and Add Operation """
-        self.acc = self.get_memint(data)
+        self.acc = self.read(cell)
 
-    def opcode_2(self, data):
+    def opcode_2(self, cell):
         """ Add Operation """
-        self.acc += self.get_memint(data)
+        self.acc += self.read(cell)
 
-    def opcode_3(self, data):
+    def opcode_3(self, cell):
         """ Test Accumulator contents Operation """
         if self.acc < 0:
-            self.pc = data
+            self.pc = cell
 
-    def opcode_4(self, data):
+    def opcode_4(self, cell):
         """ Shift operation """
-        x,y = int(math.floor(data / 10)), int(data % 10)
+        x,y = int(math.floor(cell / 10)), int(cell % 10)
         for i in range(0,x):
             self.acc = (self.acc * 10) % 10000
         for i in range(0,y):
             self.acc = int(math.floor(self.acc / 10))
 
-    def opcode_5(self, data):
+    def opcode_5(self, cell):
         """ Output operation """
-        self.stdout(self.mem[data])
+        self.stdout(self.mem[cell])
 
-    def opcode_6(self, data):
+    def opcode_6(self, cell):
         """ Store operation """
-        self.mem[data] = self.pad(self.acc)
+        self.mem[cell] = self.pad(self.acc)
 
-    def opcode_7(self, data):
+    def opcode_7(self, cell):
         """ Subtract Operation """
-        self.acc -= self.get_memint(data)
+        self.acc -= self.read(cell)
 
-    def opcode_8(self, data):
+    def opcode_8(self, cell):
         """ Unconditional Jump operation """
         self.mem[99] = '8' + self.pad(self.pc, 2)
-        self.pc = data
+        self.pc = cell
 
-    def opcode_9(self, data):
+    def opcode_9(self, cell):
         """ Halt and Reset operation """
         self.reset()
 
-    def run(self, pc=None):
+    def run(self):
         """ Runs code in memory until halt/reset opcode. """
-        if pc:
-            self.pc = pc
         self.running = True
         while self.running:
             self.process()
         print "Output:\n%s" % self.format_output()
-        self.init_output()
 
 
 class Cardiac(CPU, Memory, IO):
     pass
+
 
 if __name__ == '__main__':
     c = Cardiac()

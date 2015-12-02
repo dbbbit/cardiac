@@ -1,4 +1,10 @@
 class Assembler(object):
+    """
+    op_code for cardiac: OPERATOR + memory address[00-99];
+    bootstrap op_code: 001 in cell 00;
+
+    ["001", "xxx" "800"] read sth to cell 01 then execute it, jmp back to 00 again;
+    """
     OPERATORS = {
         "inp": 0,
         "cla": 1,
@@ -15,9 +21,9 @@ class Assembler(object):
     def __init__(self):
         self.reader = []
         self.output = ["002", "800"]
-        self.data_p = 4
+        self.data_p = 3
         self.code_p = 10
-        self.labels = {}  # key:value => label:addr
+        self.labels = {}  # label_name: label_line
 
     def read_source(self, filename):
         """
@@ -26,59 +32,44 @@ class Assembler(object):
         self.reader = [s.rstrip('\n') for s in open(filename, 'r').readlines()]
         self.reader.reverse()
 
-    def pre(self):
-        #: get all labels
-        source = self.reader[:]
+    def prepare(self):
+        source_code = self.reader[:]
         code_p = self.code_p
         data_p = self.data_p
-        while len(source):
-            text = source.pop()
-            tks = [tk.lower() for tk in text.split()]
-
-            #: pass space or tab
-            if not tks:
+        while len(source_code):
+            line = source_code.pop()
+            toks = [tok.lower() for tok in line.split()]
+            if not toks:
                 continue
-
-            #: label
-            if tks[0] not in self.OPERATORS and len(tks) >= 3:
-                label_name = tks[0]
-                if tks[1] == 'data':
+            if toks[0] not in self.OPERATORS and len(toks) >= 3:
+                label_name = toks[0]
+                if toks[1] == 'data':
                     self.labels[label_name] = data_p
                 else:
                     self.labels[label_name] = code_p
-                tks.remove(tks[0])
-
-            if len(tks) >= 2 and tks[0] in self.OPERATORS:
+                toks.remove(toks[0])
+            if toks[0] in self.OPERATORS and len(toks) >= 2:
                 code_p += 1
-
-            if len(tks) >= 2 and tks[0] == 'data':
+            if toks[0] == 'data' and len(toks) >= 2:
                 data_p += 1
 
     def compile(self):
-        self.pre()
+        self.prepare()
         while len(self.reader):
-            text = self.reader.pop()
-            tks = [tk.lower() for tk in text.split()]
-
-            #: pass space or tab
-            if not tks:
+            line = self.reader.pop()
+            toks = [tok.lower() for tok in line.split()]
+            if not toks:
                 continue
-
-            #: label
-            if tks[0] not in self.OPERATORS and len(tks) >= 3:
-                tks.remove(tks[0])
-
-            #: data
-            if len(tks) >= 2 and tks[0] == 'data':
+            if toks[0] not in self.OPERATORS and len(toks) >= 3:
+                toks.remove(toks[0])
+            if len(toks) >= 2 and toks[0] == 'data':
                 self.output.append(self.pad(self.data_p))
-                self.output.append(tks[1])
+                self.output.append(toks[1])
                 self.data_p += 1
                 continue
-
-            #: instruction
-            if len(tks) >= 2 and tks[0] in self.OPERATORS:
-                operation = tks[0]
-                address = tks[1]
+            if len(toks) >= 2 and toks[0] in self.OPERATORS:
+                operation = toks[0]
+                address = toks[1]
                 op = str(self.OPERATORS[operation])
                 if address in self.labels:
                     address = self.pad(self.labels[address], length=2)
